@@ -27,12 +27,13 @@ app.get('/health', async (_req, res) => {
 });
 
 // ── Analyze ───────────────────────────────────────────────────────────────────
-const input = z.object({ message: z.string().trim().min(1, 'Paste a message to analyze.').max(5000) });
 const mlUrl = process.env.ML_SERVICE_URL ?? 'http://localhost:8000';
+const input = z.object({ message: z.string().trim().min(1, 'Paste a message to analyze.').max(5000) });
 
 app.post('/api/v1/analyze', async (req, res, next) => {
   try {
     const { message } = input.parse(req.body);
+    console.log('Calling ML service at:', mlUrl);
     const mlEndpoint = mlUrl.startsWith('http') ? mlUrl : `https://${mlUrl}`;
     const response = await fetch(`${mlEndpoint}/analyze`, {
       method: 'POST',
@@ -40,6 +41,7 @@ app.post('/api/v1/analyze', async (req, res, next) => {
       body: JSON.stringify({ message }),
       signal: AbortSignal.timeout(10000),
     });
+    console.log('ML service response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ML service error:', response.status, errorText);
