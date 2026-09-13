@@ -61,11 +61,15 @@ app.post('/api/v1/analyze', async (req, res, next) => {
 });
 
 // ── Global error handler ──────────────────────────────────────────────────────
-app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const message = error instanceof z.ZodError
-    ? error.issues[0]?.message
-    : 'Unable to analyze this message.';
-  res.status(error instanceof z.ZodError ? 400 : 503).json({ error: message });
+app.use((error: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (error instanceof z.ZodError) {
+    res.status(400).json({ error: error.issues[0]?.message ?? 'Invalid input.' });
+    return;
+  }
+  const isAuthRoute = req.path.startsWith('/auth');
+  const message = isAuthRoute ? 'Something went wrong. Please try again.' : 'Unable to analyze this message.';
+  console.error('Unhandled error:', error);
+  res.status(503).json({ error: message });
 });
 
 // ── MongoDB + server start ────────────────────────────────────────────────────
