@@ -24,10 +24,15 @@ function clearToken() { localStorage.removeItem(TOKEN_KEY); }
 async function apiFetch(path: string, body: object, token?: string) {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (token) headers['authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
-  return data as { token: string; user: AuthUser };
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
+    return data as { token: string; user: AuthUser };
+  } catch (e) {
+    if (e instanceof SyntaxError) throw new Error('Server returned an unexpected response. Please try again.');
+    throw e;
+  }
 }
 
 // ── Auth Modal ────────────────────────────────────────────────────────────────
