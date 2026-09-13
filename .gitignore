@@ -1,0 +1,9 @@
+node_modules/
+.npm-cache/
+.pip-cache/
+dist/
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+coverage/

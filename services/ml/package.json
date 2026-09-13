@@ -1,0 +1,1 @@
+{"name":"@scamsafe/ml","private":true,"scripts":{"dev":"python -m uvicorn app:app --reload --port 8000","test":"python -m pytest"}}

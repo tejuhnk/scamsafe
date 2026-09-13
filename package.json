@@ -1,0 +1,12 @@
+{
+  "name": "code-mixed-scam-sms-detector",
+  "private": true,
+  "workspaces": ["apps/*", "services/*"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @scamsafe/web\" \"npm run dev -w @scamsafe/api\" \"npm run dev -w @scamsafe/ml\"",
+    "build": "npm run build -w @scamsafe/web && npm run build -w @scamsafe/api",
+    "test": "npm run test -w @scamsafe/api && npm run test -w @scamsafe/ml",
+    "lint": "npm run lint -w @scamsafe/web && npm run lint -w @scamsafe/api"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}
