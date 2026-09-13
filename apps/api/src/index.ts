@@ -33,13 +33,18 @@ const mlUrl = process.env.ML_SERVICE_URL ?? 'http://localhost:8000';
 app.post('/api/v1/analyze', async (req, res, next) => {
   try {
     const { message } = input.parse(req.body);
-    const response = await fetch(`${mlUrl}/analyze`, {
+    const mlEndpoint = mlUrl.startsWith('http') ? mlUrl : `https://${mlUrl}`;
+    const response = await fetch(`${mlEndpoint}/analyze`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ message }),
-      signal: AbortSignal.timeout(7000),
+      signal: AbortSignal.timeout(10000),
     });
-    if (!response.ok) throw new Error('Detection service unavailable');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ML service error:', response.status, errorText);
+      throw new Error('Detection service unavailable');
+    }
     const result = await response.json() as MlResult;
     const verdict = score(result);
     res.json({
