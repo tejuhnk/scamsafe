@@ -12,6 +12,9 @@ type Result = {
 
 type AuthUser = { _id: string; email: string; displayName: string };
 
+// ── API base URL (empty string = same origin in dev, full URL in production) ──
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? '';
+
 // ── Persistent auth helpers ───────────────────────────────────────────────────
 const TOKEN_KEY = 'scamsafe_token';
 function saveToken(t: string) { localStorage.setItem(TOKEN_KEY, t); }
@@ -21,7 +24,7 @@ function clearToken() { localStorage.removeItem(TOKEN_KEY); }
 async function apiFetch(path: string, body: object, token?: string) {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (token) headers['authorization'] = `Bearer ${token}`;
-  const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
   return data as { token: string; user: AuthUser };
@@ -149,7 +152,7 @@ function App() {
   useEffect(() => {
     const stored = loadToken();
     if (!stored) return;
-    fetch('/auth/me', { headers: { authorization: `Bearer ${stored}` } })
+    fetch(`${API_BASE}/auth/me`, { headers: { authorization: `Bearer ${stored}` } })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((data: { user: AuthUser }) => { setUser(data.user); setToken(stored); })
       .catch(() => clearToken());
@@ -170,7 +173,7 @@ function App() {
     try {
       const headers: Record<string, string> = { 'content-type': 'application/json' };
       if (token) headers['authorization'] = `Bearer ${token}`;
-      const response = await fetch('/api/v1/analyze', {
+      const response = await fetch(`${API_BASE}/api/v1/analyze`, {
         method: 'POST', headers, body: JSON.stringify({ message }),
       });
       const body = await response.json();
